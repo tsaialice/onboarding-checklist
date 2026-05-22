@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>新人填表與文件確認預覽</title>
+  <style>
+    :root {
+      --page: #ffffff;
+      --ink: #1f2937;
+      --muted: #5f6b7a;
+      --line: #d9e2ec;
+      --line-strong: #c5d2df;
+      --brand: #17324f;
+      --brand-soft: #eaf1f8;
+      --header: #d7e7f5;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+      color: var(--ink);
+    }
+
+    .shell {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+    }
+
+    .hero {
+      background: var(--brand);
+      color: #fff;
+      border-radius: 20px;
+      padding: 28px 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: clamp(28px, 4vw, 38px);
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .hero ul {
+      margin: 0;
+      padding-left: 20px;
+      color: #d9e6f2;
+      line-height: 1.9;
+      font-size: 15px;
+    }
+
+    .toolbar {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tab-btn {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: var(--brand);
+      border-color: #fff;
+    }
+
+    .frame {
+      margin-top: 20px;
+      background: var(--page);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .tab-panel {
+      display: none;
+      padding: 28px 28px 34px;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .sheet-head {
+      margin-bottom: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sheet-head h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      color: var(--brand);
+    }
+
+    .sheet-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 12px 14px;
+      vertical-align: top;
+      text-align: left;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    thead th {
+      background: var(--header);
+      color: var(--brand);
+      font-weight: 800;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: #fbfdff;
+    }
+
+    .section-cell {
+      background: var(--brand-soft);
+      font-weight: 700;
+      color: var(--brand);
+      width: 120px;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-right: 6px;
+      margin-bottom: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    .tag-fill {
+      background: #fce8e8;
+      color: #9f1d1d;
+    }
+
+    .tag-check {
+      background: #e6f0fb;
+      color: #1f5fa2;
+    }
+
+    .tag-optional {
+      background: #fff3d8;
+      color: #8a5800;
+    }
+
+    .tag-internal {
+      background: #eceff4;
+      color: #4b5563;
+    }
+
+    .cell-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .cell-list li {
+      margin: 0 0 6px;
+    }
+
+    .sheet-note {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--line-strong);
+      background: #f8fbfe;
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        padding: 18px 12px 28px;
+      }
+
+      .hero,
+      .tab-panel {
+        padding: 20px 16px;
+      }
+
+      .sheet-head h2 {
+        font-size: 21px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <h1>新人填表與文件確認注意事項</h1>
+      <ul>
+        <li>請先依序確認每一份表單需要你做的是「填寫」、「勾選確認」、「繳交文件」還是「簽名」。</li>
+        <li>在人事檔案資料表中，應備文件區與報到當天簽署文件區，請由新人自己確認並標示目前是已繳交、待補或未提供。</li>
+        <li>若有配偶、扶養親屬、眷屬加保或役畢等情況，再填寫或提供對應欄位與文件；不確定時請先詢問 HR。</li>
+      </ul>
+      <div class="toolbar" role="tablist" aria-label="表單分頁">
+        <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1" data-target="panel-1">人事檔案資料表</button>
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" data-target="panel-2">個資告知書</button>
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-3" id="tab-3" data-target="panel-3">員工聘僱合約書</button>
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-4" id="tab-4" data-target="panel-4">免稅額申報表</button>
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-5" id="tab-5" data-target="panel-5">其他事項確認書</button>
+      </div>
+    </section>
+
+    <div class="frame">
+      <section class="tab-panel active" id="panel-1" role="tabpanel" aria-labelledby="tab-1">
+        <div class="sheet-head">
+          <h2>人事檔案資料表</h2>
+          <p>這份表以新人填寫與新人自行確認文件是否備妥為主；其中工號與部分預填資料仍可保留由 HR 協助填入或由新人核對。</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>區塊</th>
+                <th>欄位 / 項目</th>
+                <th>新人要做什麼</th>
+                <th>新人留意事項</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="section-cell">新人基本資料區</td>
+                <td>工號</td>
+                <td>
+                  <span class="tag tag-internal">由 HR 填入</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>此欄由 HR 填寫，新人不用自行填寫。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人基本資料區</td>
+                <td>姓名</td>
+                <td>
+                  <span class="tag tag-check">請核對</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>你重新上傳的新版表單目前仍顯示由 HR 填入，我先在預覽中設計成由新人負責核對。</li>
+                    <li>請確認與身分證姓名一致。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人基本資料區</td>
+                <td>部門</td>
+                <td>
+                  <span class="tag tag-check">請核對</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請確認與錄用內容一致。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人基本資料區</td>
+                <td>到職日</td>
+                <td>
+                  <span class="tag tag-check">請核對</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請確認與其他文件一致。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人基本資料區</td>
+                <td>聯絡地址</td>
+                <td>
+                  <span class="tag tag-fill">請填寫</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請填寫完整地址，避免後續建檔或寄送資料有誤。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人基本資料區</td>
+                <td>手機號碼</td>
+                <td>
+                  <span class="tag tag-fill">請填寫</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請填寫可聯繫到本人的手機號碼。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人基本資料區</td>
+                <td>緊急聯絡人姓名</td>
+                <td>
+                  <span class="tag tag-fill">請填寫</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請填寫緊急狀況下可聯絡的對象。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人基本資料區</td>
+                <td>緊急聯絡人關係</td>
+                <td>
+                  <span class="tag tag-fill">請填寫 / 勾選</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請勾選或填寫與該聯絡人的關係。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人基本資料區</td>
+                <td>緊急聯絡電話</td>
+                <td>
+                  <span class="tag tag-fill">請填寫</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請填寫可實際聯絡的電話。</li>
+                  </ul>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="section-cell">新人應備文件區</td>
+                <td>國民身分證</td>
+                <td>
+                  <span class="tag tag-fill">請繳交</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>正本供查驗，影本留存。</li>
+                    <li>請由新人自己確認目前是已繳交、待補或未提供。</li>
+                    <li>身分證影本須當日中午前請各地行政窗口回傳。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人應備文件區</td>
+                <td>最高學歷畢業證書</td>
+                <td>
+                  <span class="tag tag-fill">請繳交</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>正本供查驗，影本留存。</li>
+                    <li>若當日未備妥，請自行勾選待補或未提供。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人應備文件區</td>
+                <td>離職證明文件</td>
+                <td>
+                  <span class="tag tag-fill">請繳交</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>正本供查驗，影本留存。</li>
+                    <li>若尚未取得，請主動告知補件時間。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人應備文件區</td>
+                <td>勞、健保、勞退三合一轉出單</td>
+                <td>
+                  <span class="tag tag-fill">請繳交</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>正本供查驗，影本留存。</li>
+                    <li>若當日未備妥，請自行標示待補或未提供。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人應備文件區</td>
+                <td>富邦銀行存摺封面</td>
+                <td>
+                  <span class="tag tag-fill">請繳交</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>影本一份留存。</li>
+                    <li>請確認帳號資訊清楚，以利後續薪資匯款作業。</li>
+                    <li>影本須當日中午前請各地行政窗口回傳。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人應備文件區</td>
+                <td>退伍令</td>
+                <td>
+                  <span class="tag tag-optional">符合條件時提供</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>役畢者提供；免役或未服役者可不提供。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人應備文件區</td>
+                <td>戶籍謄本或戶口名簿影本</td>
+                <td>
+                  <span class="tag tag-optional">符合條件時提供</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>有需眷屬加健保者提供。</li>
+                  </ul>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="section-cell">新人報到當天簽署文件</td>
+                <td>員工聘僱合約書一式兩份</td>
+                <td>
+                  <span class="tag tag-fill">請簽署</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請確認內容後再簽名。</li>
+                    <li>請由新人自己確認目前是已繳交、待補或未提供。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人報到當天簽署文件</td>
+                <td>扶養親屬申報表</td>
+                <td>
+                  <span class="tag tag-fill">請填妥</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>這是新版人事檔案資料表目前列示的名稱，我先同步更新預覽內容。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人報到當天簽署文件</td>
+                <td>其他事項確認表</td>
+                <td>
+                  <span class="tag tag-fill">請填妥</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請完成勞退自提與眷屬加保需求的勾選及簽名。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">新人報到當天簽署文件</td>
+                <td>個人資料蒐集、處理及利用告知書</td>
+                <td>
+                  <span class="tag tag-fill">請填妥</span>
+                  <span class="tag tag-check">請自行勾選狀態</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>請閱讀內容後簽名並填寫日期。</li>
+                  </ul>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="section-cell">HR 內部確認區</td>
+                <td>人員應徵資料表</td>
+                <td>
+                  <span class="tag tag-internal">無須處理</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>這是公司內部文件，由 HR 確認即可。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">HR 內部確認區</td>
+                <td>人員需求申請表</td>
+                <td>
+                  <span class="tag tag-internal">無須處理</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>這是公司內部文件，由 HR 確認即可。</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td class="section-cell">HR 內部確認區</td>
+                <td>錄用通知書</td>
+                <td>
+                  <span class="tag tag-internal">無須處理</span>
+                </td>
+                <td>
+                  <ul class="cell-list">
+                    <li>這是公司內部任用紀錄，由 HR 確認即可。</li>
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sheet-note">管理流程上，這版已將文件備妥與簽署確認的責任主體改成新人自己先確認，再交由 HR 收件。</div>
+      </section>
+
+      <section class="tab-panel" id="panel-2" role="tabpanel" aria-labelledby="tab-2">
+        <div class="sheet-head">
+          <h2>個人資料蒐集、處理及利用告知書</h2>
+          <p>這份文件是個資告知文件，重點是由新人閱讀後完成簽名與日期。</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>欄位 / 項目</th>
+                <th>新人要做什麼</th>
+                <th>新人留意事項</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>員工姓名</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請與其他文件上的姓名一致。</li></ul></td></tr>
+              <tr><td>員工簽名</td><td><span class="tag tag-fill">請簽名</span></td><td><ul class="cell-list"><li>請閱讀內容後親自簽名。</li></ul></td></tr>
+              <tr><td>填寫日期</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>建議填寫實際報到當日日期。</li></ul></td></tr>
+              <tr><td>文件內容</td><td><span class="tag tag-check">請閱讀</span></td><td><ul class="cell-list"><li>如對內容有疑問，簽名前請先詢問 HR。</li></ul></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="panel-3" role="tabpanel" aria-labelledby="tab-3">
+        <div class="sheet-head">
+          <h2>員工聘僱合約書</h2>
+          <p>這份文件要先核對聘僱條件，再由新人完成簽名與日期。</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>欄位 / 項目</th>
+                <th>新人要做什麼</th>
+                <th>新人留意事項</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>乙方姓名</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請確認與身分證姓名一致。</li></ul></td></tr>
+              <tr><td>到職日</td><td><span class="tag tag-check">請核對</span></td><td><ul class="cell-list"><li>請先確認是否正確，若有差異請立即提出。</li></ul></td></tr>
+              <tr><td>職務</td><td><span class="tag tag-check">請核對</span></td><td><ul class="cell-list"><li>請先確認是否與錄用內容一致。</li></ul></td></tr>
+              <tr><td>主要工作地點</td><td><span class="tag tag-check">請核對</span></td><td><ul class="cell-list"><li>請先確認是否與實際報到地一致。</li></ul></td></tr>
+              <tr><td>經常性薪資</td><td><span class="tag tag-check">請核對</span></td><td><ul class="cell-list"><li>請先確認薪資金額與約定內容是否一致。</li></ul></td></tr>
+              <tr><td>甲乙雙方簽章</td><td><span class="tag tag-fill">請簽名</span></td><td><ul class="cell-list"><li>新人需完成本人簽名，甲方簽章由公司處理。</li></ul></td></tr>
+              <tr><td>簽署日期</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>建議填寫實際報到當日日期。</li></ul></td></tr>
+              <tr><td>份數</td><td><span class="tag tag-check">請確認</span></td><td><ul class="cell-list"><li>請確認合約為一式兩份，雙方各留存一份。</li></ul></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="panel-4" role="tabpanel" aria-labelledby="tab-4">
+        <div class="sheet-head">
+          <h2>免稅額申報表</h2>
+          <p>這份文件主要是薪資與稅務申報資料；如有配偶或扶養親屬，再填寫對應欄位。</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>欄位 / 項目</th>
+                <th>新人要做什麼</th>
+                <th>新人留意事項</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>年度</td><td><span class="tag tag-check">請確認</span></td><td><ul class="cell-list"><li>請確認使用的是當年度版本表單。</li></ul></td></tr>
+              <tr><td>薪資受領人姓名</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請與身分證姓名一致。</li></ul></td></tr>
+              <tr><td>出生年月日</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請依實際資料填寫。</li></ul></td></tr>
+              <tr><td>國民身分證統一編號</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請確認格式正確，避免後續稅務申報錯誤。</li></ul></td></tr>
+              <tr><td>地址</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請填寫完整地址。</li></ul></td></tr>
+              <tr><td>配偶資料</td><td><span class="tag tag-optional">符合條件時填寫</span></td><td><ul class="cell-list"><li>有配偶者再填寫，無則可留白。</li></ul></td></tr>
+              <tr><td>受扶養直系尊親屬資料</td><td><span class="tag tag-optional">符合條件時填寫</span></td><td><ul class="cell-list"><li>有申報扶養者再填寫，無則可留白。</li></ul></td></tr>
+              <tr><td>受扶養子女資料</td><td><span class="tag tag-optional">符合條件時填寫</span></td><td><ul class="cell-list"><li>有申報扶養者再填寫，無則可留白。</li></ul></td></tr>
+              <tr><td>受扶養兄弟姊妹資料</td><td><span class="tag tag-optional">符合條件時填寫</span></td><td><ul class="cell-list"><li>有申報扶養者再填寫，無則可留白。</li></ul></td></tr>
+              <tr><td>其他親屬或家屬資料</td><td><span class="tag tag-optional">符合條件時填寫</span></td><td><ul class="cell-list"><li>有申報扶養者再填寫，無則可留白。</li></ul></td></tr>
+              <tr><td>符合條件欄位</td><td><span class="tag tag-optional">符合條件時勾選</span></td><td><ul class="cell-list"><li>若有扶養申報，請記得勾選或填寫對應條件。</li></ul></td></tr>
+              <tr><td>薪資受領人簽章</td><td><span class="tag tag-fill">請簽名 / 蓋章</span></td><td><ul class="cell-list"><li>請本人確認內容後簽名或蓋章。</li></ul></td></tr>
+              <tr><td>填報日期</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>建議填寫實際報到當日日期。</li></ul></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="panel-5" role="tabpanel" aria-labelledby="tab-5">
+        <div class="sheet-head">
+          <h2>其他事項確認書</h2>
+          <p>這份文件請確認勞退自願提繳與眷屬健保加保需求，再完成勾選、簽名與日期。</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>欄位 / 項目</th>
+                <th>新人要做什麼</th>
+                <th>新人留意事項</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>姓名</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請與其他文件上的姓名一致。</li></ul></td></tr>
+              <tr><td>到職日</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請確認與其他文件一致。</li></ul></td></tr>
+              <tr><td>部門</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請確認與任用內容一致。</li></ul></td></tr>
+              <tr><td>職稱</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>請確認與任用內容一致。</li></ul></td></tr>
+              <tr><td>是否自願提繳勞退 6%</td><td><span class="tag tag-fill">請勾選</span></td><td><ul class="cell-list"><li>請擇一勾選，不可空白。</li></ul></td></tr>
+              <tr><td>是否有眷屬需健保加保</td><td><span class="tag tag-fill">請勾選</span></td><td><ul class="cell-list"><li>請擇一勾選，不可空白。</li></ul></td></tr>
+              <tr><td>戶籍謄本或戶口名簿影本</td><td><span class="tag tag-optional">符合條件時提供</span></td><td><ul class="cell-list"><li>若有眷屬加保需求，請一併提供。</li></ul></td></tr>
+              <tr><td>其他事項補充說明</td><td><span class="tag tag-optional">有需要時填寫</span></td><td><ul class="cell-list"><li>如有特殊狀況或需補充說明時再填寫。</li></ul></td></tr>
+              <tr><td>員工簽名</td><td><span class="tag tag-fill">請簽名</span></td><td><ul class="cell-list"><li>請本人確認內容後簽名。</li></ul></td></tr>
+              <tr><td>填寫日期</td><td><span class="tag tag-fill">請填寫</span></td><td><ul class="cell-list"><li>建議填寫實際報到當日日期。</li></ul></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const buttons = Array.from(document.querySelectorAll(".tab-btn"));
+    const panels = Array.from(document.querySelectorAll(".tab-panel"));
+
+    function activateTab(targetId) {
+      buttons.forEach((button) => {
+        const active = button.dataset.target === targetId;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", String(active));
+      });
+      panels.forEach((panel) => {
+        panel.classList.toggle("active", panel.id === targetId);
+      });
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => activateTab(button.dataset.target));
+    });
+  </script>
+</body>
+</html>
