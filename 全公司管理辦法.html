@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<!-- saved from url=(0096)file:///C:/Users/anne/Downloads/NAS%E8%B7%AF%E5%BE%91%E5%B0%8E%E5%BC%95%E5%9C%96%E7%A4%BA_1.html -->
+<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全公司管理辦法 — 路徑導引</title>
+<link href="./全公司管理辦法 — 路徑導引_files/css2" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:#F0F4F8;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;}
+
+h1{font-size:18px;font-weight:700;color:#1A3A5C;margin-bottom:6px;text-align:center;}
+.subtitle{font-size:12px;color:#6B7280;margin-bottom:32px;text-align:center;font-family:'DM Mono',monospace;}
+
+/* Path row */
+.path-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;justify-content:center;width:100%;max-width:760px;}
+
+.step{display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform .15s;}
+.step:hover{transform:translateY(-3px);}
+
+.step-box{
+  width:148px;
+  background:#fff;
+  border:1.5px solid #D0D9E8;
+  border-radius:12px;
+  padding:16px 12px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  transition:border-color .2s, box-shadow .2s;
+  position:relative;
+}
+.step.active .step-box{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
+
+.step-icon{font-size:32px;line-height:1;}
+.step-label{font-size:13px;font-weight:700;color:#1F2937;text-align:center;}
+.step-sub{font-size:10px;color:#9CA3AF;font-family:'DM Mono',monospace;text-align:center;letter-spacing:.3px;}
+
+.step-num{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  position:absolute;top:-10px;left:-10px;
+}
+
+/* Arrow */
+.arrow{font-size:20px;color:#94A3B8;padding:0 4px;flex-shrink:0;margin-bottom:18px;}
+
+/* Detail panel */
+.detail-panel{
+  width:100%;max-width:760px;
+  background:#fff;
+  border-radius:14px;
+  border:1.5px solid #D0D9E8;
+  margin-top:24px;
+  overflow:hidden;
+  transition:max-height .35s cubic-bezier(.4,0,.2,1), opacity .25s;
+  max-height:0;opacity:0;
+}
+.detail-panel.open{max-height:400px;opacity:1;}
+
+.detail-header{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 20px;
+  border-bottom:1px solid #E5EAF0;
+}
+.detail-header-icon{font-size:28px;}
+.detail-title{font-size:15px;font-weight:700;color:#1A3A5C;}
+.detail-sub{font-size:11px;color:#9CA3AF;font-family:'DM Mono',monospace;margin-top:2px;}
+
+.detail-body{padding:16px 20px;display:flex;flex-direction:column;gap:10px;}
+
+.tip{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 14px;
+  border-radius:8px;
+  font-size:13px;
+  line-height:1.6;
+}
+.tip-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.tip.info{background:#EBF4FF;color:#1A3A5C;}
+.tip.warn{background:#FFFBEB;color:#92400E;border:1px solid #FCD34D;}
+.tip.ok{background:#ECFDF5;color:#065F46;}
+
+.path-badge{
+  display:inline-block;
+  font-family:'DM Mono',monospace;font-size:11px;
+  background:#F1F5F9;border:1px solid #CBD5E1;
+  border-radius:4px;padding:2px 7px;color:#334155;
+  margin-top:4px;word-break:break-all;
+}
+
+/* Step color themes */
+.step:nth-child(1){--accent:#6B7280;--accent-light:rgba(107,114,128,.12);}
+.step:nth-child(3){--accent:#378ADD;--accent-light:rgba(55,138,221,.12);}
+.step:nth-child(5){--accent:#1D9E75;--accent-light:rgba(29,158,117,.12);}
+.step:nth-child(7){--accent:#D97706;--accent-light:rgba(217,119,6,.12);}
+
+.close-btn{margin-left:auto;font-size:18px;color:#9CA3AF;cursor:pointer;line-height:1;padding:4px 8px;border-radius:4px;transition:background .15s;}
+.close-btn:hover{background:#F1F5F9;color:#374151;}
+</style>
+</head>
+<body>
+
+<h1>📋 全公司管理辦法 — 路徑導引</h1>
+<p class="subtitle">點選各步驟，查看詳細操作說明</p>
+
+<div class="path-row">
+  <div class="step" id="s1" onclick="toggle(1)">
+    <div class="step-box">
+      <div class="step-num">1</div>
+      <div class="step-icon">🖥️</div>
+      <div class="step-label">本機</div>
+      <div class="step-sub">開啟檔案總管</div>
+    </div>
+  </div>
+
+  <div class="arrow">›</div>
+
+  <div class="step" id="s2" onclick="toggle(2)">
+    <div class="step-box">
+      <div class="step-num">2</div>
+      <div class="step-icon">🗄️</div>
+      <div class="step-label">satti NAS</div>
+      <div class="step-sub">\\192.168.2.240 (T:)</div>
+    </div>
+  </div>
+
+  <div class="arrow">›</div>
+
+  <div class="step" id="s3" onclick="toggle(3)">
+    <div class="step-box">
+      <div class="step-num">3</div>
+      <div class="step-icon">📂</div>
+      <div class="step-label">公用資料夾</div>
+      <div class="step-sub">第一層資料夾</div>
+    </div>
+  </div>
+
+  <div class="arrow">›</div>
+
+  <div class="step" id="s4" onclick="toggle(4)">
+    <div class="step-box">
+      <div class="step-num">4</div>
+      <div class="step-icon">📁</div>
+      <div class="step-label">全公司管理辦法</div>
+      <div class="step-sub">目的地資料夾</div>
+    </div>
+  </div>
+</div>
+
+<div class="detail-panel" id="panel"></div>
+
+<script>
+const details = {
+  1:{
+    icon:'🖥️',
+    title:'本機 — 開啟檔案總管',
+    sub:'Step 1',
+    tips:[
+      {type:'info',icon:'💡',text:'按下鍵盤 <b>Windows 鍵 + E</b> 快速開啟檔案總管，或從工作列點選資料夾圖示。'},
+      {type:'ok', icon:'✅',text:'開啟後，在左側欄往下找到「<b>本機</b>」或「<b>網路</b>」區域，準備進入下一步。'},
+    ]
+  },
+  2:{
+    icon:'🗄️',
+    title:'satti NAS — 網路磁碟機 (T:)',
+    sub:'Step 2 · \\\\192.168.2.240',
+    tips:[
+      {type:'info',icon:'💡',text:'在檔案總管左側欄，往下滑找到「<b>satti (\\\\192.168.2.240) (T:)</b>」，點一下展開。'},
+      {type:'warn',icon:'⚠️',text:'看不到 T: 磁碟機？請確認已連接公司 Wi-Fi 或內部網路，並洽詢 IT 同仁協助掛載磁碟機。'},
+    ]
+  },
+  3:{
+    icon:'📂',
+    title:'公用資料夾',
+    sub:'Step 3 · T: 磁碟機第一層',
+    tips:[
+      {type:'info',icon:'💡',text:'進入 T: 磁碟機後，<b>直接在第一層</b>就可以看到「公用資料夾」，點兩下開啟。'},
+      {type:'ok', icon:'✅',text:'不需要進入任何子資料夾，公用資料夾就在 T: 的根目錄底下。'},
+    ]
+  },
+  4:{
+    icon:'📁',
+    title:'全公司管理辦法',
+    sub:'Step 4 · 目的地資料夾',
+    tips:[
+      {type:'ok', icon:'✅',text:'進入公用資料夾後，即可看到「<b>全公司管理辦法</b>」資料夾，點兩下開啟。'},
+      {type:'info',icon:'📄',text:'資料夾內依部門分類，包含工程部、業務部、資材部、電控維修部、管理部、機械材部等各部門管理辦法。'},
+      {type:'info',icon:'🔗',text:'完整路徑：<span class="path-badge">T:\\公用資料夾\\全公司管理辦法</span>'},
+    ]
+  }
+};
+
+let current = 0;
+
+function toggle(n){
+  if(current === n){ close(); return; }
+  current = n;
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  const d = details[n];
+  const panel = document.getElementById('panel');
+  panel.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-header-icon">${d.icon}</div>
+      <div>
+        <div class="detail-title">${d.title}</div>
+        <div class="detail-sub">${d.sub}</div>
+      </div>
+      <div class="close-btn" onclick="close()">✕</div>
+    </div>
+    <div class="detail-body">
+      ${d.tips.map(t=>`<div class="tip ${t.type}"><span class="tip-icon">${t.icon}</span><span>${t.text}</span></div>`).join('')}
+    </div>
+  `;
+  panel.classList.add('open');
+}
+
+function close(){
+  current = 0;
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('panel').classList.remove('open');
+}
+</script>
+
+
+</body></html>
